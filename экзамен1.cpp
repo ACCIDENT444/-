@@ -91,7 +91,7 @@ public:
         }
     }
 
-    // Генерация ТОП-3 категорий по расходам (НОВАЯ ФУНКЦИЯ)
+    // Генерация ТОП-3 категорий по расходам 
     void generateTopCategories(const string& reportType) {
         if (reportType == "week") {
             cout << "Top 3 weekly categories:" << endl;
@@ -120,7 +120,7 @@ public:
         }
     }
 
-    // Сохранение отчетов в файл (НОВАЯ ФУНКЦИЯ)
+    // Сохранение отчетов в файл 
     void saveReportsToFile(const string& reportType, const string& filename) {
         ofstream file(filename);
         if (file.is_open()) {
@@ -245,7 +245,7 @@ int main() {
                 wallet.generateTopExpenses(topExpensesType);
                 break;
             }
-            case 5: { // ТОП-3 категорий (НОВЫЙ ПУНКТ)
+            case 5: { // ТОП-3 категорий 
                 string topCategoriesType;
                 cout << "Enter report type for top categories (week/month): ";
                 cin >> topCategoriesType;
@@ -259,7 +259,7 @@ int main() {
                 wallet.saveToFile(filename);
                 break;
             }
-            case 7: { // Сохранение отчета (НОВЫЙ ПУНКТ)
+            case 7: { // Сохранение отчета 
                 string reportType, filename;
                 cout << "Enter report type (day/week/month): ";
                 cin >> reportType;
