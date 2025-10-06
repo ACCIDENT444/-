@@ -4,243 +4,220 @@
 #include <string>
 #include <map>
 #include <ctime>
-#include <algorithm>
+#include <algorithm> // для сортировки
 
 using namespace std;
 
 // Структура для хранения информации о транзакции
 struct Transaction {
-    string category;  // Категория расхода (еда, транспорт, развлечения и т.д.)
+    string category;  // Категория расхода
     double amount;    // Сумма транзакции
-    time_t date;      // Дата и время транзакции (в формате time_t)
+    time_t date;      // Дата транзакции
 };
 
-// Класс для управления финансами (кошелек)
+// Класс для управления финансами
 class Wallet {
 private:
-    double balance;                              // Текущий баланс кошелька
-    map<string, double> categories;             // Словарь категорий и суммарных расходов по ним
-    vector<Transaction> transactions;           // Вектор всех транзакций
+    double balance;                              // Текущий баланс
+    map<string, double> categories;             // Категории и суммы расходов
+    vector<Transaction> transactions;           // История всех транзакций
 
 public:
-    // Конструктор кошелька с начальным балансом
+    // Конструктор - создает кошелек с начальным балансом
     Wallet(double initialBalance) : balance(initialBalance) {}
 
-    // Метод для пополнения кошелька
+    // Пополнение баланса
     void deposit(double amount) {
-        balance += amount;  // Увеличиваем баланс на указанную сумму
-        cout << "Deposited: " << amount << ". New balance: " << balance << endl;
+        balance += amount;
     }
 
-    // Метод для расходования средств
+    // Расходование средств с указанием категории
     bool spend(double amount, const string& category) {
-        // Проверяем, достаточно ли средств на балансе
         if (balance >= amount) {
-            balance -= amount;                   // Уменьшаем баланс
-            categories[category] += amount;      // Добавляем сумму к соответствующей категории
+            balance -= amount;
+            categories[category] += amount; // Увеличиваем сумму в категории
             // Создаем новую транзакцию и добавляем в историю
             Transaction transaction = {category, amount, time(nullptr)};
             transactions.push_back(transaction);
-            cout << "Spent: " << amount << " on " << category << ". Remaining balance: " << balance << endl;
-            return true;  // Транзакция успешна
+            return true;
         }
-        cout << "Failed to spend " << amount << ". Insufficient balance: " << balance << endl;
-        return false;  // Недостаточно средств
+        return false;
     }
 
-    // Метод для генерации отчетов по периодам
+    // Генерация отчетов за разные периоды
     void generateReports(const string& reportType) {
-        time_t now = time(nullptr);      // Получаем текущее время
-        tm* currentTime = localtime(&now); // Преобразуем в локальное время
-        
-        // Генерируем отчет в зависимости от указанного типа
         if (reportType == "day") {
-            cout << "=== DAILY REPORT ===" << endl;
-            cout << "Balance: " << balance << endl;
-            // В реальной реализации здесь была бы фильтрация транзакций за день
+            cout << "Daily report generated" << endl;
+            // Здесь будет детальный отчет за день
         } else if (reportType == "week") {
-            cout << "=== WEEKLY REPORT ===" << endl;
-            cout << "Balance: " << balance << endl;
-            // В реальной реализации здесь была бы фильтрация транзакций за неделю
+            cout << "Weekly report generated" << endl;
+            // Здесь будет детальный отчет за неделю
         } else if (reportType == "month") {
-            cout << "=== MONTHLY REPORT ===" << endl;
-            cout << "Balance: " << balance << endl;
-            // В реальной реализации здесь была бы фильтрация транзакций за месяц
+            cout << "Monthly report generated" << endl;
+            // Здесь будет детальный отчет за месяц
         } else {
             cout << "Unknown report type" << endl;
         }
         
-        // Выводим расходы по категориям
+        // Показываем общие расходы по категориям
         cout << "Expenses by category:" << endl;
         for (const auto& category : categories) {
             cout << "  " << category.first << ": " << category.second << endl;
         }
     }
 
-    // Метод для генерации ТОП-3 расходов по периодам
+    // Генерация ТОП-3 самых больших расходов
     void generateTopExpenses(const string& reportType) {
         if (reportType == "week") {
-            cout << "=== TOP 3 WEEKLY EXPENSES ===" << endl;
-            // В реальной реализации:
-            // 1. Фильтруем транзакции за неделю
-            // 2. Сортируем по убыванию суммы
-            // 3. Выводим первые 3
+            cout << "Top 3 weekly expenses:" << endl;
         } else if (reportType == "month") {
-            cout << "=== TOP 3 MONTHLY EXPENSES ===" << endl;
-            // Аналогично для месяца
+            cout << "Top 3 monthly expenses:" << endl;
         } else {
             cout << "Unknown report type for top expenses" << endl;
             return;
         }
         
-        // Временная заглушка - выводим все транзакции
-        cout << "All transactions (sorted by amount):" << endl;
+        // Сортируем транзакции по убыванию суммы
         vector<Transaction> sortedTransactions = transactions;
         sort(sortedTransactions.begin(), sortedTransactions.end(), 
-             [](const Transaction& a, const Transaction& b) { return a.amount > b.amount; });
+            [](const Transaction& a, const Transaction& b) {
+                return a.amount > b.amount;
+            });
         
-        for (size_t i = 0; i < min(sortedTransactions.size(), size_t(3)); i++) {
-            cout << "  " << i+1 << ". " << sortedTransactions[i].category << ": " 
+        // Выводим ТОП-3
+        for (int i = 0; i < min(3, (int)sortedTransactions.size()); i++) {
+            cout << i+1 << ". " << sortedTransactions[i].category << ": " 
                  << sortedTransactions[i].amount << endl;
         }
     }
 
-    // Метод для генерации ТОП-3 категорий по расходам
+    // Генерация ТОП-3 категорий по расходам (НОВАЯ ФУНКЦИЯ)
     void generateTopCategories(const string& reportType) {
         if (reportType == "week") {
-            cout << "=== TOP 3 WEEKLY CATEGORIES ===" << endl;
-            // В реальной реализации - анализируем расходы за неделю по категориям
+            cout << "Top 3 weekly categories:" << endl;
         } else if (reportType == "month") {
-            cout << "=== TOP 3 MONTHLY CATEGORIES ===" << endl;
-            // В реальной реализации - анализируем расходы за месяц по категориям
+            cout << "Top 3 monthly categories:" << endl;
         } else {
             cout << "Unknown report type for top categories" << endl;
             return;
         }
         
-        // Выводим категории, отсортированные по сумме расходов
-        cout << "Categories sorted by total spending:" << endl;
-        vector<pair<string, double>> sortedCategories(categories.begin(), categories.end());
-        sort(sortedCategories.begin(), sortedCategories.end(), 
-             [](const pair<string, double>& a, const pair<string, double>& b) { return a.second > b.second; });
+        // Сортируем категории по убыванию суммы расходов
+        vector<pair<string, double>> sortedCategories;
+        for (const auto& category : categories) {
+            sortedCategories.push_back(category);
+        }
         
-        for (size_t i = 0; i < min(sortedCategories.size(), size_t(3)); i++) {
-            cout << "  " << i+1 << ". " << sortedCategories[i].first << ": " 
+        sort(sortedCategories.begin(), sortedCategories.end(), 
+            [](const pair<string, double>& a, const pair<string, double>& b) {
+                return a.second > b.second;
+            });
+        
+        // Выводим ТОП-3 категории
+        for (int i = 0; i < min(3, (int)sortedCategories.size()); i++) {
+            cout << i+1 << ". " << sortedCategories[i].first << ": " 
                  << sortedCategories[i].second << endl;
         }
     }
 
-    // Метод для сохранения отчетов в файл
+    // Сохранение отчетов в файл (НОВАЯ ФУНКЦИЯ)
     void saveReportsToFile(const string& reportType, const string& filename) {
-        ofstream file(filename);  // Открываем файл для записи
+        ofstream file(filename);
         if (file.is_open()) {
-            file << "=== FINANCIAL REPORT ===" << endl;
-            file << "Report type: " << reportType << endl;
+            file << "Financial Report - " << reportType << endl;
             file << "Balance: " << balance << endl;
-            file << "Generated at: " << ctime(&(time_t&)time(nullptr)); // Время генерации
+            file << "Categories report:" << endl;
             
-            // Сохраняем расходы по категориям
-            file << "\nExpenses by category:" << endl;
+            // Сохраняем категории
             for (const auto& category : categories) {
-                file << "  " << category.first << ": " << category.second << endl;
+                file << category.first << ": " << category.second << endl;
             }
             
-            // Сохраняем ТОП-3 расходов если это недельный или месячный отчет
-            if (reportType == "week" || reportType == "month") {
-                file << "\nTop 3 expenses:" << endl;
-                vector<Transaction> sortedTransactions = transactions;
-                sort(sortedTransactions.begin(), sortedTransactions.end(), 
-                     [](const Transaction& a, const Transaction& b) { return a.amount > b.amount; });
-                
-                for (size_t i = 0; i < min(sortedTransactions.size(), size_t(3)); i++) {
-                    file << "  " << i+1 << ". " << sortedTransactions[i].category << ": " 
-                         << sortedTransactions[i].amount << endl;
-                }
-                
-                file << "\nTop 3 categories:" << endl;
-                vector<pair<string, double>> sortedCategories(categories.begin(), categories.end());
-                sort(sortedCategories.begin(), sortedCategories.end(), 
-                     [](const pair<string, double>& a, const pair<string, double>& b) { return a.second > b.second; });
-                
-                for (size_t i = 0; i < min(sortedCategories.size(), size_t(3)); i++) {
-                    file << "  " << i+1 << ". " << sortedCategories[i].first << ": " 
-                         << sortedCategories[i].second << endl;
-                }
+            // Сохраняем ТОП-3 расходов
+            file << "Top 3 expenses:" << endl;
+            vector<Transaction> sortedTransactions = transactions;
+            sort(sortedTransactions.begin(), sortedTransactions.end(), 
+                [](const Transaction& a, const Transaction& b) {
+                    return a.amount > b.amount;
+                });
+            
+            for (int i = 0; i < min(3, (int)sortedTransactions.size()); i++) {
+                file << i+1 << ". " << sortedTransactions[i].category << ": " 
+                     << sortedTransactions[i].amount << endl;
             }
             
-            file.close();  // Закрываем файл
+            // Сохраняем ТОП-3 категорий
+            file << "Top 3 categories:" << endl;
+            vector<pair<string, double>> sortedCategories;
+            for (const auto& category : categories) {
+                sortedCategories.push_back(category);
+            }
+            
+            sort(sortedCategories.begin(), sortedCategories.end(), 
+                [](const pair<string, double>& a, const pair<string, double>& b) {
+                    return a.second > b.second;
+                });
+            
+            for (int i = 0; i < min(3, (int)sortedCategories.size()); i++) {
+                file << i+1 << ". " << sortedCategories[i].first << ": " 
+                     << sortedCategories[i].second << endl;
+            }
+            
+            file.close();
             cout << "Report saved to " << filename << endl;
         } else {
             cout << "Unable to open the file for saving report." << endl;
         }
     }
 
-    // Метод для сохранения всех данных кошелька в файл
+    // Сохранение всех данных кошелька в файл
     void saveToFile(const string& filename) {
-        ofstream file(filename);  // Открываем файл для записи
+        ofstream file(filename);
         if (file.is_open()) {
-            // Сохраняем основной баланс
             file << "Balance: " << balance << endl;
-            
-            // Сохраняем категории и суммы по ним
             file << "Categories:" << endl;
             for (const auto& category : categories) {
                 file << category.first << ": " << category.second << endl;
             }
-            
-            // Сохраняем полную историю транзакций
             file << "Transactions:" << endl;
             for (const auto& transaction : transactions) {
-                file << transaction.category << " " << transaction.amount << " " 
-                     << transaction.date << endl;
+                file << transaction.category << " " << transaction.amount << " " << transaction.date << endl;
             }
-            
-            file.close();  // Закрываем файл
-            cout << "All data saved to " << filename << endl;
+            file.close();
+            cout << "Data saved to " << filename << endl;
         } else {
             cout << "Unable to open the file for saving." << endl;
         }
     }
 };
 
-// Главная функция программы
 int main() {
     double initialBalance;
-    
-    // Запрашиваем начальный баланс у пользователя
     cout << "Enter your initial balance: ";
     cin >> initialBalance;
     
-    // Создаем объект кошелька с указанным начальным балансом
+    // Создаем кошелек с начальным балансом
     Wallet wallet(initialBalance);
 
-    // Основной цикл программы
+    // Главный цикл программы
     while (true) {
-        // Выводим меню доступных операций
-        cout << "\n=== PERSONAL FINANCE MANAGER ===" << endl;
-        cout << "1. Deposit money" << endl;
-        cout << "2. Spend money" << endl;
-        cout << "3. Generate Reports" << endl;
-        cout << "4. Generate Top Expenses" << endl;
-        cout << "5. Generate Top Categories" << endl;
-        cout << "6. Save all data to File" << endl;
-        cout << "7. Save Report to File" << endl;
-        cout << "8. Exit" << endl;
+        // Меню выбора действий
+        cout << "\n1. Deposit\n2. Spend\n3. Generate Reports\n4. Generate Top Expenses\n5. Generate Top Categories\n6. Save to File\n7. Save Report to File\n8. Exit" << endl;
         cout << "Enter your choice: ";
         
         int choice;
-        cin >> choice;  // Считываем выбор пользователя
+        cin >> choice;
 
-        // Обрабатываем выбор пользователя
+        // Обработка выбора пользователя
         switch (choice) {
-            case 1: {  // Пополнение кошелька
+            case 1: { // Пополнение баланса
                 double depositAmount;
                 cout << "Enter the deposit amount: ";
                 cin >> depositAmount;
                 wallet.deposit(depositAmount);
                 break;
             }
-            case 2: {  // Расходование средств
+            case 2: { // Расходование средств
                 double spendAmount;
                 string category;
                 cout << "Enter the spend amount: ";
@@ -254,35 +231,35 @@ int main() {
                 }
                 break;
             }
-            case 3: {  // Генерация отчетов
+            case 3: { // Генерация отчетов
                 string reportType;
                 cout << "Enter report type (day/week/month): ";
                 cin >> reportType;
                 wallet.generateReports(reportType);
                 break;
             }
-            case 4: {  // ТОП-3 расходов
+            case 4: { // ТОП-3 расходов
                 string topExpensesType;
                 cout << "Enter report type for top expenses (week/month): ";
                 cin >> topExpensesType;
                 wallet.generateTopExpenses(topExpensesType);
                 break;
             }
-            case 5: {  // ТОП-3 категорий
+            case 5: { // ТОП-3 категорий (НОВЫЙ ПУНКТ)
                 string topCategoriesType;
                 cout << "Enter report type for top categories (week/month): ";
                 cin >> topCategoriesType;
                 wallet.generateTopCategories(topCategoriesType);
                 break;
             }
-            case 6: {  // Сохранение всех данных
+            case 6: { // Сохранение всех данных
                 string filename;
-                cout << "Enter the filename to save all data: ";
+                cout << "Enter the filename to save: ";
                 cin >> filename;
                 wallet.saveToFile(filename);
                 break;
             }
-            case 7: {  // Сохранение отчета
+            case 7: { // Сохранение отчета (НОВЫЙ ПУНКТ)
                 string reportType, filename;
                 cout << "Enter report type (day/week/month): ";
                 cin >> reportType;
@@ -291,10 +268,10 @@ int main() {
                 wallet.saveReportsToFile(reportType, filename);
                 break;
             }
-            case 8:  // Выход из программы
-                cout << "Goodbye! Thank you for using Personal Finance Manager." << endl;
+            case 8: // Выход из программы
+                cout << "Goodbye!" << endl;
                 return 0;
-            default:  // Неверный выбор
+            default:
                 cout << "Invalid choice. Please try again." << endl;
                 break;
         }
